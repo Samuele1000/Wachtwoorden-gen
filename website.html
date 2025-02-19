@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wachtwoord Generator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Wachtwoord Generator</h1>
+        <div class="passwords-container" id="passwords-container">
+            <div class="password-display" id="password">Uw wachtwoord verschijnt hier</div>
+            <div id="password-strength" class="password-strength" style="display: none;">Zeer sterk</div>
+        </div>
+        <div class="options">
+            <div class="option">
+                <label>Wachtwoord lengte: <input type="range" id="length" value="12" min="4" max="50" oninput="updateLengthValue(this.value)"></label>
+                <span id="lengthValue">12</span> tekens
+            </div>
+            <div class="option">
+                <label>Aantal wachtwoorden:
+                    <select id="quantity">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </label>
+            </div>
+            <div class="option">
+                <label><input type="checkbox" id="uppercase" checked> Hoofdletters</label>
+            </div>
+            <div class="option">
+                <label><input type="checkbox" id="lowercase" checked> Kleine letters</label>
+            </div>
+            <div class="option">
+                <label><input type="checkbox" id="numbers" checked> Cijfers</label>
+            </div>
+            <div class="option">
+                <label><input type="checkbox" id="symbols" checked> Speciale tekens</label>
+            </div>
+        </div>
+        <button onclick="generatePassword()">
+            <img src="path/to/icon.png" alt="" style="width: 20px; vertical-align: middle; margin-right: 5px;">
+            Genereer Wachtwoord
+        </button>
+        <button id="download-button" style="display: none;">Download Alle Wachtwoorden</button>
+    </div>
+
+    <footer>
+        <p>© <span id="current-year"></span> Samuele. Alle rechten voorbehouden.</p>
+        <a href="privacy.html" class="footer-link">Privacy Voorwaarden</a>
+        <a href="info.html" class="footer-link">Aanvullende Informatie</a>
+    </footer>
+
+    <script>
+        function updateLengthValue(value) {
+            document.getElementById('lengthValue').textContent = value;
+        }
+
+        function generatePassword() {
+            const length = document.getElementById('length').value;
+            const quantity = document.getElementById('quantity').value;
+            const uppercase = document.getElementById('uppercase').checked;
+            const lowercase = document.getElementById('lowercase').checked;
+            const numbers = document.getElementById('numbers').checked;
+            const symbols = document.getElementById('symbols').checked;
+
+            let chars = '';
+            if (uppercase) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            if (lowercase) chars += 'abcdefghijklmnopqrstuvwxyz';
+            if (numbers) chars += '0123456789';
+            if (symbols) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+            const passwordsContainer = document.getElementById('passwords-container');
+            passwordsContainer.innerHTML = '';
+
+            let allPasswords = []; // Array om alle wachtwoorden op te slaan
+
+            for (let q = 0; q < quantity; q++) {
+                let password = '';
+                for (let i = 0; i < length; i++) {
+                    password += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                allPasswords.push(password); // Voeg elk wachtwoord toe aan de array
+
+                const passwordDiv = document.createElement('div');
+                passwordDiv.className = 'password-display';
+                passwordDiv.textContent = password; // Toon wachtwoord
+                passwordsContainer.appendChild(passwordDiv);
+            }
+
+            // Update de download knop om alle wachtwoorden te downloaden
+            const downloadButton = document.getElementById('download-button');
+            downloadButton.style.display = 'block';
+            downloadButton.onclick = () => downloadPasswords(allPasswords);
+
+            // Update de sterkte-indicator
+            const strengthIndicator = document.getElementById('password-strength');
+            if (length >= 12 && uppercase && lowercase && numbers && symbols) {
+                strengthIndicator.textContent = 'Zeer sterk';
+                strengthIndicator.style.backgroundColor = '#4CAF50'; // Groen
+            } else if (length >= 8) {
+                strengthIndicator.textContent = 'Gemiddeld';
+                strengthIndicator.style.backgroundColor = '#FFC107'; // Geel
+            } else {
+                strengthIndicator.textContent = 'Zwak';
+                strengthIndicator.style.backgroundColor = '#F44336'; // Rood
+            }
+        }
+
+        function downloadPasswords(passwords) {
+            const allPasswordsText = passwords.join('\n'); // Maak één string van alle wachtwoorden, gescheiden door nieuwe regels
+            const blob = new Blob([allPasswordsText], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'wachtwoorden.txt';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
