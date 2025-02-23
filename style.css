@@ -1,5 +1,5 @@
 body {
-  background: silver url("https://i.imgur.com/u49xcTY.png") fixed;
+  background: silver;
 }
 
 #app {
@@ -46,7 +46,7 @@ body {
   margin: 0;
   height: 12px;
   transition: all ease-in 0.25s;
-  cursor: url(./assets/cursor.png), auto;
+  cursor: auto;
 }
 #app .container .character-container .char-length-wrapper .range-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -57,7 +57,6 @@ body {
   width: 42px;
   height: 42px;
   background-color: #179578;
-  background: url("https://i.imgur.com/t0q8nDG.png");
 }
 #app .container .character-container .char-length-wrapper .range-slider::-moz-range-thumb {
   -moz-appearance: none;
@@ -68,7 +67,6 @@ body {
   width: 23px;
   height: 24px;
   background-color: #179578;
-  background: url("https://www.w3schools.com/howto/contrasticon.png");
 }
 #app .container .character-container .char-length-wrapper .range-slider:focus {
   outline: none;
@@ -98,7 +96,6 @@ body {
   width: 30px;
 }
 #app .container .pwd-length-setting-wrapper {
-  background: silver url(https://www.toptal.com/designers/subtlepatterns/patterns/old_wall.png) fixed;
   background: rgba(14, 190, 255, 0.4);
 }
 #app .container .pwd-length-setting-wrapper .message-list {
