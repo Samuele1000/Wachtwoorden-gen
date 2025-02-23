@@ -1,130 +1,98 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="nl" >
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wachtwoord Generator</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <title>Nintendo 8-bit stijl wachtwoordgenerator</title>
+  <link href="https://unpkg.com/nes.css@2.1.0/css/nes.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Press+Start+2P">
+<script src="https://rawgit.com/WeiChiaChang/Easter-egg/master/easter-eggs-collection.js"></script><link rel="stylesheet" href="./style.css">
+
 </head>
 <body>
-    <div class="container">
-        <h1>Wachtwoord Generator</h1>
-        <div class="passwords-container" id="passwords-container">
-            <div class="password-display" id="password">Uw wachtwoord verschijnt hier</div>
-            <div id="password-strength" class="password-strength" style="display: none;">Zeer sterk</div>
+<!-- partial:index.partial.html -->
+<div id="app">
+    <section class="container nes-container with-title">
+      <h2 class="title">Wachtwoordgenerator</h2>
+      <p id="user-ip" class="nes-text">Jouw IP-adres: <span>{{ userIP }}</span></p>
+      <section class="icon-list">
+        <!-- Verwijderde sociale media iconen -->
+      </section>
+      <section class="nes-container with-title pwd-length-setting-wrapper">
+        <h3 class="title">Wachtwoordinstelling</h3>
+        <div id="balloons" class="item">
+          <section class="message-list">
+            <section class="message -left">
+              <i class="nes-bcrikko"></i>
+              <!-- Balloon -->
+              <div class="nes-balloon from-left">
+                <p>
+                  Jouw wachtwoordlengte
+                  <input
+                    type="number"
+                    min="6"
+                    :max="config.maxLength"
+                    class="nes-input pwd_length_field"
+                    v-model="config.minLength"
+                  >
+                </p>
+              </div>
+            </section>
+            <section class="message -right">
+              <!-- Balloon -->
+              <div class="nes-balloon from-right">
+                <p :class="`pwd-strength-${pwdStrength.text}`">{{formatter(pwdStrength.text)}}</p>
+              </div>
+              <i class="nes-octocat animate"></i>
+            </section>
+          </section>
         </div>
-        <div class="options">
-            <div class="option">
-                <label>Wachtwoord lengte: <input type="range" id="length" value="12" min="4" max="50" oninput="updateLengthValue(this.value)"></label>
-                <span id="lengthValue">12</span> tekens
-            </div>
-            <div class="option">
-                <label>Aantal wachtwoorden:
-                    <select id="quantity">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                    </select>
-                </label>
-            </div>
-            <div class="option">
-                <label><input type="checkbox" id="uppercase" checked> Hoofdletters</label>
-            </div>
-            <div class="option">
-                <label><input type="checkbox" id="lowercase" checked> Kleine letters</label>
-            </div>
-            <div class="option">
-                <label><input type="checkbox" id="numbers" checked> Cijfers</label>
-            </div>
-            <div class="option">
-                <label><input type="checkbox" id="symbols" checked> Speciale tekens</label>
-            </div>
+      </section>
+      <section class="character-container nes-container with-title">
+        <h2 class="title">Tekenreeks</h2>
+        <div class="char-length-wrapper">
+          <label>Symbolen:</label>
+          <div class="range-slider_wrapper">
+            <span class="slider-bar" :style="{ width: symbolsProgress + '%' }"></span>
+            <input
+              type="range"
+              min="0"
+              :max="config.maxSymbols"
+              class="range-slider"
+              v-model="config.minSymbols"
+            >
+          </div>
+          <span class="number-tip">{{ config.minSymbols }}</span>
         </div>
-        <button onclick="generatePassword()">
-            <img src="path/to/icon.png" alt="" style="width: 20px; vertical-align: middle; margin-right: 5px;">
-            Genereer Wachtwoord
-        </button>
-        <button id="download-button" style="display: none;">Download Alle Wachtwoorden</button>
-    </div>
+        <div class="char-length-wrapper">
+          <label>Getallen:</label>
+          <div class="range-slider_wrapper">
+            <span class="slider-bar" :style="{ width: numbersProgress + '%' }"></span>
+            <input
+              type="range"
+              min="0"
+              :max="config.maxNumbers"
+              class="range-slider"
+              v-model="config.minNumbers"
+            >
+          </div>
+          <span class="number-tip">{{ config.minNumbers }}</span>
+        </div>
+      </section>
+      <section class="generate-pwd-container nes-container with-title">
+        <h2 class="title">Gegenereerd Wachtwoord</h2>
+        <p id="pwd-input" class="nes-input">{{ password }}</p>
+        <div class="btn-wrapper">
+          <button type="button" class="nes-btn is-primary" @click="generatePwd">Genereer Wachtwoord</button>
+          <button type="button" class="nes-btn is-success" @click="clipboardCopied">
+            <span v-if="isCopied">Gekopieerd!</span>
+            <span v-else>Kopieer</span>
+          </button>
+        </div>
+      </section>
+    </section>
+  </div>
+<!-- partial -->
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js'></script><script  src="./script.js"></script>
 
-    <footer>
-        <p>© <span id="current-year"></span> Samuele. Alle rechten voorbehouden.</p>
-        <a href="privacy.html" class="footer-link">Privacy Voorwaarden</a>
-        <a href="info.html" class="footer-link">Aanvullende Informatie</a>
-    </footer>
-
-    <script>
-        function updateLengthValue(value) {
-            document.getElementById('lengthValue').textContent = value;
-        }
-
-        function generatePassword() {
-            const length = document.getElementById('length').value;
-            const quantity = document.getElementById('quantity').value;
-            const uppercase = document.getElementById('uppercase').checked;
-            const lowercase = document.getElementById('lowercase').checked;
-            const numbers = document.getElementById('numbers').checked;
-            const symbols = document.getElementById('symbols').checked;
-
-            let chars = '';
-            if (uppercase) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            if (lowercase) chars += 'abcdefghijklmnopqrstuvwxyz';
-            if (numbers) chars += '0123456789';
-            if (symbols) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
-
-            const passwordsContainer = document.getElementById('passwords-container');
-            passwordsContainer.innerHTML = '';
-
-            let allPasswords = []; // Array om alle wachtwoorden op te slaan
-
-            for (let q = 0; q < quantity; q++) {
-                let password = '';
-                for (let i = 0; i < length; i++) {
-                    password += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                allPasswords.push(password); // Voeg elk wachtwoord toe aan de array
-
-                const passwordDiv = document.createElement('div');
-                passwordDiv.className = 'password-display';
-                passwordDiv.textContent = password; // Toon wachtwoord
-                passwordsContainer.appendChild(passwordDiv);
-            }
-
-            // Update de download knop om alle wachtwoorden te downloaden
-            const downloadButton = document.getElementById('download-button');
-            downloadButton.style.display = 'block';
-            downloadButton.onclick = () => downloadPasswords(allPasswords);
-
-            // Update de sterkte-indicator
-            const strengthIndicator = document.getElementById('password-strength');
-            if (length >= 12 && uppercase && lowercase && numbers && symbols) {
-                strengthIndicator.textContent = 'Zeer sterk';
-                strengthIndicator.style.backgroundColor = '#4CAF50'; // Groen
-            } else if (length >= 8) {
-                strengthIndicator.textContent = 'Gemiddeld';
-                strengthIndicator.style.backgroundColor = '#FFC107'; // Geel
-            } else {
-                strengthIndicator.textContent = 'Zwak';
-                strengthIndicator.style.backgroundColor = '#F44336'; // Rood
-            }
-        }
-
-        function downloadPasswords(passwords) {
-            const allPasswordsText = passwords.join('\n'); // Maak één string van alle wachtwoorden, gescheiden door nieuwe regels
-            const blob = new Blob([allPasswordsText], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'wachtwoorden.txt';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-        }
-
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-    </script>
 </body>
 </html>
